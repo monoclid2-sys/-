@@ -4,18 +4,23 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Тест по медиамероприятиям</title>
+    <!-- Подключаем Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <!-- Подключаем React и ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <!-- Подключаем Babel для JSX -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <style>
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
         }
     </style>
 </head>
 <body>
     <div id="root"></div>
+
+    <!-- Скрипт с типом text/babel для Babel -->
     <script type="text/babel">
         const { useState } = React;
 
@@ -43,38 +48,171 @@
                 ],
                 correctAnswer: 1,
                 explanation: "Основная цель — максимальный охват и упоминания в медиапространстве."
-            },
-            {
-                id: 3,
-                question: "Какое из следующих утверждений лучше всего описывает пресс-конференцию?",
-                options: [
-                    "Внутреннее совещание компании для обсуждения стратегических вопросов.",
-                    "Организованное мероприятие для взаимодействия с журналистами и СМИ, на котором рассказывается о важных изменениях и новостях компании в формате вопрос-ответ.",
-                    "Выездное мероприятие для представителей СМИ, оплачиваемое компанией.",
-                    "Неформальная встреча с блогерами для обсуждения новых продуктов."
-                ],
-                correctAnswer: 1,
-                explanation: "Пресс-конференция — это мероприятие для взаимодействия с журналистами и СМИ в формате вопрос-ответ."
-            },
-            {
-                id: 4,
-                question: "Какие из перечисленных элементов НЕ являются обязательными для пресс-конференции?",
-                options: [
-                    "Конкретная тема с перечнем вопросов.",
-                    "Наличие ведущего (модератора).",
-                    "Вступительные слова представителей компании.",
-                    "Организация фуршета для участников."
-                ],
-                correctAnswer: 3,
-                explanation: "Организация фуршета не является обязательным элементом пресс-конференции."
-            },
-            {
-                id: 5,
-                question: "Какой из следующих типов пресс-конференций НЕ упомянут в материале?",
-                options: [
-                    "Собственная, организованная компанией.",
-                    "Для заказчика по договору с медиахолдингом.",
-                    "Онлайн.",
-                    "Закрытая для широкой публики."
-                ],
-                correctAnswer: 3,
+            }
+        ];
+
+        function TestApp() {
+            const [currentQuestion, setCurrentQuestion] = useState(0);
+            const [selectedOption, setSelectedOption] = useState(null);
+            const [isAnswered, setIsAnswered] = useState(false);
+            const [isCorrect, setIsCorrect] = useState(false);
+            const [score, setScore] = useState(0);
+            const [showExplanation, setShowExplanation] = useState(false);
+
+            const totalQuestions = questions.length;
+            const progress = ((currentQuestion) / totalQuestions) * 100;
+            const current = questions[currentQuestion];
+
+            const handleOptionSelect = (index) => {
+                if (isAnswered) return;
+                setSelectedOption(index);
+            };
+
+            const handleSubmit = () => {
+                if (selectedOption === null) return;
+                setIsAnswered(true);
+                const correct = selectedOption === current.correctAnswer;
+                setIsCorrect(correct);
+                if (correct) setScore(score + 1);
+            };
+
+            const handleNext = () => {
+                setSelectedOption(null);
+                setIsAnswered(false);
+                setIsCorrect(false);
+                setShowExplanation(false);
+                if (currentQuestion < totalQuestions - 1) {
+                    setCurrentQuestion(currentQuestion + 1);
+                }
+            };
+
+            const toggleExplanation = () => {
+                setShowExplanation(!showExplanation);
+            };
+
+            return (
+                <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-6">
+                    <div className="max-w-3xl mx-auto bg-white rounded-xl shadow-lg p-8">
+                        <div className="flex justify-between items-center mb-6">
+                            <h1 className="text-2xl font-bold text-indigo-800">Тест по медиамероприятиям</h1>
+                            <div className="text-sm text-gray-600">
+                                Вопрос {currentQuestion + 1} из {totalQuestions}
+                            </div>
+                        </div>
+
+                        <div className="w-full bg-gray-200 rounded-full h-2.5 mb-6">
+                            <div className="bg-indigo-600 h-2.5 rounded-full" style={{ width: `${progress}%` }}></div>
+                        </div>
+
+                        <div className="mb-8">
+                            <h2 className="text-xl font-semibold text-gray-800 mb-4">{current.question}</h2>
+                            <div className="space-y-3">
+                                {current.options.map((option, index) => {
+                                    const isSelected = selectedOption === index;
+                                    const isCorrectAnswer = index === current.correctAnswer;
+                                    const isWrongAnswer = isAnswered && isSelected && !isCorrect;
+                                    const isCorrectSelected = isAnswered && isSelected && isCorrect;
+
+                                    return (
+                                        <button
+                                            key={index}
+                                            onClick={() => handleOptionSelect(index)}
+                                            disabled={isAnswered}
+                                            className={`w-full p-4 text-left rounded-lg border-2 transition-all duration-200 ${
+                                                isAnswered
+                                                    ? isCorrectSelected
+                                                        ? "bg-green-100 border-green-400 text-green-800"
+                                                        : isWrongAnswer
+                                                            ? "bg-red-100 border-red-400 text-red-800"
+                                                            : isCorrectAnswer
+                                                                ? "bg-green-100 border-green-400 text-green-800"
+                                                                : "bg-gray-50 border-gray-200 text-gray-700"
+                                                    : isSelected
+                                                    ? "bg-indigo-100 border-indigo-400 text-indigo-800"
+                                                    : "bg-gray-50 border-gray-200 text-gray-700 hover:bg-indigo-50 hover:border-indigo-300"
+                                            }`}
+                                        >
+                                            {option}
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        </div>
+
+                        <div className="flex justify-between items-center">
+                            {!isAnswered ? (
+                                <button
+                                    onClick={handleSubmit}
+                                    disabled={selectedOption === null}
+                                    className={`px-6 py-2 rounded-lg font-medium transition-colors ${
+                                        selectedOption === null
+                                            ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                                            : "bg-indigo-600 text-white hover:bg-indigo-700"
+                                    }`}
+                                >
+                                    Ответить
+                                </button>
+                            ) : (
+                                <div className="flex space-x-4">
+                                    <button
+                                        onClick={toggleExplanation}
+                                        className="px-6 py-2 bg-indigo-100 text-indigo-800 rounded-lg font-medium hover:bg-indigo-200 transition-colors"
+                                    >
+                                        {showExplanation ? "Скрыть пояснение" : "Показать пояснение"}
+                                    </button>
+                                    {currentQuestion < totalQuestions - 1 ? (
+                                        <button
+                                            onClick={handleNext}
+                                            className="px-6 py-2 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 transition-colors"
+                                        >
+                                            Следующий вопрос
+                                        </button>
+                                    ) : (
+                                        <button
+                                            onClick={handleNext}
+                                            className="px-6 py-2 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition-colors"
+                                        >
+                                            Завершить тест
+                                        </button>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+
+                        {isAnswered && showExplanation && (
+                            <div className="mt-6 p-4 bg-indigo-50 rounded-lg border border-indigo-200">
+                                <p className="text-indigo-800">
+                                    <strong>Пояснение:</strong> {current.explanation}
+                                </p>
+                            </div>
+                        )}
+
+                        {isAnswered && !showExplanation && isCorrect && (
+                            <div className="mt-4 p-3 bg-green-100 text-green-800 rounded-lg text-center font-medium">
+                                ✅ Правильно!
+                            </div>
+                        )}
+
+                        {isAnswered && !showExplanation && !isCorrect && (
+                            <div className="mt-4 p-3 bg-red-100 text-red-800 rounded-lg text-center font-medium">
+                                ❌ Неправильно. Правильный ответ: {current.options[current.correctAnswer]}
+                            </div>
+                        )}
+
+                        {currentQuestion === totalQuestions - 1 && isAnswered && (
+                            <div className="mt-6 p-4 bg-gray-100 rounded-lg text-center">
+                                <p className="text-lg font-semibold text-gray-800">
+                                    Ваш результат: {score} из {totalQuestions} ({Math.round((score / totalQuestions) * 100)}%)
+                                </p>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<TestApp />);
+    </script>
+</body>
+</html>
